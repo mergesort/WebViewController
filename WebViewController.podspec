@@ -5,7 +5,7 @@ Pod::Spec.new do |spec|
   spec.license      = { :type => 'MIT' }
   spec.homepage     = 'https://github.com/mergesort/WebViewController'
   spec.author       =  { 'Joe Fabisevich' => 'github@fabisevi.ch' }
-  spec.summary      = "The web view controller I'm going to use, because everyone has their own version, but this one is simple with minimal chrome.""
+  spec.summary      = "The web view controller I'm going to use, because everyone has their own version, but this one is simple with minimal chrome."
   spec.source       =  { :git => 'https://github.com/mergesort/WebViewController.git', :tag => "#{spec.version}" }
   spec.source_files = '*.{h,m}'
   spec.framework    = 'Foundation'
