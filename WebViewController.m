@@ -1,5 +1,5 @@
 //
-//  JFWebViewController.m
+//  WebViewController.m
 //  Picks
 //
 //  Created by Joe Fabisevich on 7/22/14.
@@ -30,8 +30,6 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 @property UIWebView *webView;
 @property UIToolbar *toolbar;
 
-@property UIButton *shareButton;
-
 @property UIBarButtonItem *backItem;
 @property UIBarButtonItem *forwardItem;
 
@@ -54,21 +52,22 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 - (void)viewDidLoad
 {
     [self commonInit];
+    
     [self load];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
+    
     [self.navigationController setNavigationBarHidden:YES animated:YES];
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
 }
 
-- (void)updateViewConstraints
+- (void)viewDidLayoutSubviews
 {
-    [super updateViewConstraints];
-
+    [super viewDidLayoutSubviews];
+    
     if (!self.viewHasAppeared)
     {
         self.viewHasAppeared = YES;
@@ -79,7 +78,7 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-
+    
     [self.navigationController setNavigationBarHidden:NO animated:NO];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
 }
@@ -90,68 +89,73 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 
 - (void)commonInit
 {
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+    
     UIColor *backgroundColor = [UIColor whiteColor];
     self.view.backgroundColor = backgroundColor;
-
+    
     _webView = [[UIWebView alloc] init];
     [self.view addSubview:_webView];
     _webView.scalesPageToFit = YES;
     _webView.backgroundColor = backgroundColor;
     _webView.delegate = self;
-
+    
     _toolbar = [[UIToolbar alloc] init];
     [self.view addSubview:_toolbar];
     _toolbar.translucent = YES;
-
+    
     BackArrowButton *backButton = [BackArrowButton buttonWithType:UIButtonTypeCustom];
     [backButton autoSetDimensionsToSize:CGSizeMake(50.0f, 30.0f)];
     [backButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    backButton.tintColor = lightBlueColor;
     _backItem = [[UIBarButtonItem alloc] initWithCustomView:backButton];
-
+    
     ForwardArrowButton *forwardButton = [ForwardArrowButton buttonWithType:UIButtonTypeCustom];
     [forwardButton autoSetDimensionsToSize:CGSizeMake(50.0f, 30.0f)];
     [forwardButton addTarget:self action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
+    forwardButton.tintColor = lightBlueColor;
     _forwardItem = [[UIBarButtonItem alloc] initWithCustomView:forwardButton];
-
+    
     _shareButton = [ShareButton buttonWithType:UIButtonTypeCustom];
     [_shareButton autoSetDimensionsToSize:CGSizeMake(30.0f, 30.0f)];
+    _shareButton.tintColor = lightBlueColor;
     [_shareButton addTarget:self action:@selector(showSharingOptions) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *shareItem = [[UIBarButtonItem alloc] initWithCustomView:_shareButton];
-
+    
     UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissViewControllerAnimated)];
-
+    
     UIBarButtonItem *fixedSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
     fixedSpaceItem.width = 5.0f;
-
+    
     UIBarButtonItem *wideFixedSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    wideFixedSpaceItem.width = 25.0f;
-
+    wideFixedSpaceItem.width = 20.0f;
+    
     UIBarButtonItem *flexibleSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-
+    
     _toolbar.tintColor = lightBlueColor;
     _toolbar.items = @[ fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, _backItem, fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, wideFixedSpaceItem, _forwardItem, flexibleSpaceItem, shareItem, wideFixedSpaceItem, doneItem, fixedSpaceItem ];
-
+    
     self.refreshControl = [[UIRefreshControl alloc] init];
     self.refreshControl.tintColor = [UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0f];
     [self.refreshControl addTarget:self action:@selector(refreshWebView) forControlEvents:UIControlEventValueChanged];
     [self.webView.scrollView addSubview:self.refreshControl];
     self.webView.scrollView.delegate = self;
-
+    
     [self setBrowserButtonState];
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.URL = [NSURL URLWithString:@"http://www.xkcd.com"];
-    });
 }
 
 - (void)setupConstraints
 {
+    _webView.translatesAutoresizingMaskIntoConstraints = NO;
+    _toolbar.translatesAutoresizingMaskIntoConstraints = NO;
     [_webView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(self.topLayoutGuide.length, 0, 0, 0)];
-
+    
     self.toolbarBottomConstraint = [_toolbar autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:0];
     [_toolbar autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
     [_toolbar autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
     [_toolbar autoSetDimension:ALDimensionHeight toSize:WebViewControllertoolbarHeight];
+    
+    [self.view layoutIfNeeded];
 }
 
 
@@ -162,7 +166,7 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 {
     [self setBrowserButtonState];
     [self setToolbarVisible:YES];
-
+    
     if (self.refreshControl.isRefreshing)
     {
         [self.refreshControl endRefreshing];
@@ -187,7 +191,7 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 - (void)setURL:(NSURL *)URL
 {
     _URL = URL;
-
+    
     if (self.isViewLoaded)
     {
         [self load];
@@ -213,11 +217,20 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 
 - (void)goBack
 {
+    if (self.tappedBackButton)
+    {
+        self.tappedBackButton();
+    }
+    
     [self.webView goBack];
 }
 
 - (void)goForward
 {
+    if (self.tappedForwardButton)
+    {
+        self.tappedForwardButton();
+    }
     [self.webView goForward];
 }
 
@@ -235,7 +248,11 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 
 - (void)showSharingOptions
 {
-    if (self.URL)
+    if (self.tappedShareButton)
+    {
+        self.tappedShareButton();
+    }
+    else if (self.URL)
     {
         UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ self.URL ] applicationActivities:nil];
         [self presentViewController:activityViewController animated:YES completion:nil];
@@ -244,20 +261,24 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 
 - (void)dismissViewControllerAnimated
 {
-    if (self.navigationController)
+    BOOL isPresented = self.presentingViewController.presentedViewController == self
+    || self.navigationController.presentingViewController.presentedViewController == self.navigationController
+    || [self.tabBarController.presentingViewController isKindOfClass:[UITabBarController class]];
+    
+    if (isPresented)
     {
-        [self.navigationController popViewControllerAnimated:YES];
+        [self dismissViewControllerAnimated:YES completion:nil];
     }
     else
     {
-        [self dismissViewControllerAnimated:YES completion:nil];
+        [self.navigationController popViewControllerAnimated:YES];
     }
 }
 
 - (void)setToolbarVisible:(BOOL)visible
 {
     self.toolbarBottomConstraint.constant = (visible) ? 0 : WebViewControllertoolbarHeight;
-
+    
     [UIView animateWithDuration:0.4f delay:0.0f usingSpringWithDamping:0.75f initialSpringVelocity:0.0f options:UIViewAnimationOptionCurveEaseInOut animations:^{
         [self.view layoutIfNeeded];
     } completion:nil];
