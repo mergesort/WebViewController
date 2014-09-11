@@ -23,7 +23,7 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 
 @interface WebViewController ()
 <
-    UIScrollViewDelegate
+UIScrollViewDelegate
 >
 
 @property UIRefreshControl *refreshControl;
@@ -104,20 +104,23 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
     [self.view addSubview:_toolbar];
     _toolbar.translucent = YES;
     
+    CGFloat const browserButtonWidth = 50.0f;
+    CGFloat const buttonHeight = 30.0f;
+    
     BackArrowButton *backButton = [BackArrowButton buttonWithType:UIButtonTypeCustom];
-    [backButton autoSetDimensionsToSize:CGSizeMake(50.0f, 30.0f)];
+    backButton.frame = CGRectMake(0, 0, browserButtonWidth, buttonHeight);
     [backButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
     backButton.tintColor = lightBlueColor;
     _backItem = [[UIBarButtonItem alloc] initWithCustomView:backButton];
     
     ForwardArrowButton *forwardButton = [ForwardArrowButton buttonWithType:UIButtonTypeCustom];
-    [forwardButton autoSetDimensionsToSize:CGSizeMake(50.0f, 30.0f)];
+    forwardButton.frame = CGRectMake(0, 0, browserButtonWidth, buttonHeight);
     [forwardButton addTarget:self action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
     forwardButton.tintColor = lightBlueColor;
     _forwardItem = [[UIBarButtonItem alloc] initWithCustomView:forwardButton];
     
     _shareButton = [ShareButton buttonWithType:UIButtonTypeCustom];
-    [_shareButton autoSetDimensionsToSize:CGSizeMake(30.0f, 30.0f)];
+    _shareButton.frame = CGRectMake(0, 0, buttonHeight, buttonHeight);
     _shareButton.tintColor = lightBlueColor;
     [_shareButton addTarget:self action:@selector(showSharingOptions) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *shareItem = [[UIBarButtonItem alloc] initWithCustomView:_shareButton];
@@ -128,12 +131,13 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
     fixedSpaceItem.width = 5.0f;
     
     UIBarButtonItem *wideFixedSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    wideFixedSpaceItem.width = 20.0f;
+    wideFixedSpaceItem.width = 10.0f;
     
     UIBarButtonItem *flexibleSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     
     _toolbar.tintColor = lightBlueColor;
-    _toolbar.items = @[ fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, _backItem, fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, fixedSpaceItem, wideFixedSpaceItem, _forwardItem, flexibleSpaceItem, shareItem, wideFixedSpaceItem, doneItem, fixedSpaceItem ];
+    _toolbar.translatesAutoresizingMaskIntoConstraints = YES;
+    _toolbar.items = @[ fixedSpaceItem, _backItem, wideFixedSpaceItem, _forwardItem, flexibleSpaceItem, shareItem, wideFixedSpaceItem, doneItem, fixedSpaceItem ];
     
     self.refreshControl = [[UIRefreshControl alloc] init];
     self.refreshControl.tintColor = [UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0f];
@@ -162,10 +166,14 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 ////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Delegation - UIWebView
 
+- (void)webViewDidStartLoad:(UIWebView *)webView
+{
+    [self setToolbarVisible:YES];
+}
+
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     [self setBrowserButtonState];
-    [self setToolbarVisible:YES];
     
     if (self.refreshControl.isRefreshing)
     {
@@ -181,7 +189,10 @@ CGFloat const WebViewControllertoolbarHeight = 44.0f;
 {
     CGFloat translation = [scrollView.panGestureRecognizer translationInView:scrollView.superview].y;
     BOOL scrollingUp = (translation > 0.0f);
-    [self setToolbarVisible:scrollingUp];
+    if (!self.webView.isLoading)
+    {
+        [self setToolbarVisible:scrollingUp];
+    }
 }
 
 
