@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 #Information
   spec.name         = 'WebViewController'
-  spec.version      = '1.0.2'
+  spec.version      = '1.0.3'
   spec.license      = { :type => 'MIT' }
   spec.homepage     = 'https://github.com/mergesort/WebViewController'
   spec.author       =  { 'Joe Fabisevich' => 'github@fabisevi.ch' }
