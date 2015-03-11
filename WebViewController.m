@@ -125,10 +125,17 @@ UIScrollViewDelegate
     [_shareButton addTarget:self action:@selector(showSharingOptions) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *shareItem = [[UIBarButtonItem alloc] initWithCustomView:_shareButton];
     
-    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissViewControllerAnimated)];
+    CGFloat const buttonWidth = 60.0f;
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    doneButton.layer.cornerRadius = 4.0f;
+    doneButton.frame = CGRectMake(0, 0, buttonWidth, buttonHeight);
+    doneButton.titleLabel.font = [UIFont fontWithName:@"Avenir-Heavy" size:17.0f];
+    doneButton.tintColor = [UIColor whiteColor];
+    doneButton.backgroundColor = lightBlueColor;
+    [doneButton setTitle:NSLocalizedString(@"Done", nil) forState:UIControlStateNormal];
+    [doneButton addTarget:self action:@selector(dismissViewControllerAnimated) forControlEvents:UIControlEventTouchUpInside];
     
-    UIBarButtonItem *fixedSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    fixedSpaceItem.width = 5.0f;
+    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithCustomView:doneButton];
     
     UIBarButtonItem *wideFixedSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
     wideFixedSpaceItem.width = 10.0f;
@@ -137,7 +144,7 @@ UIScrollViewDelegate
     
     _toolbar.tintColor = lightBlueColor;
     _toolbar.translatesAutoresizingMaskIntoConstraints = YES;
-    _toolbar.items = @[ fixedSpaceItem, _backItem, wideFixedSpaceItem, _forwardItem, flexibleSpaceItem, shareItem, wideFixedSpaceItem, doneItem, fixedSpaceItem ];
+    _toolbar.items = @[ _backItem, wideFixedSpaceItem, _forwardItem, flexibleSpaceItem, shareItem, wideFixedSpaceItem, doneItem, ];
     
     self.refreshControl = [[UIRefreshControl alloc] init];
     self.refreshControl.tintColor = [UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0f];
